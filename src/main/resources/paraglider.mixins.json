@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "tictim.paraglider.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "minVersion": "0.8",
+  "mixins": [
+    "MixinEnderDragonFight",
+    "MixinGrindstoneMenu",
+    "MixinItemStack",
+    "MixinLivingEntity",
+    "MixinPlayer",
+    "MixinPlayerChunkTracking",
+    "MixinPotionBrewing",
+    "MixinRaid"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

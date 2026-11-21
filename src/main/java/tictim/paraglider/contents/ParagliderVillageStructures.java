@@ -1,0 +1,111 @@
+package tictim.paraglider.contents;
+
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import org.jspecify.annotations.NullMarked;
+import tictim.paraglider.ParagliderMod;
+import tictim.paraglider.config.FeatureCfg;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import static tictim.paraglider.api.ParagliderAPI.MODID;
+
+@NullMarked
+public final class ParagliderVillageStructures {
+	/** Avoids appending the same structures twice on repeated data-pack reloads. */
+	private static final java.util.Set<StructureTemplatePool> INJECTED =
+			java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+
+	private ParagliderVillageStructures() {}
+
+	public static void addVillageStructures(HolderLookup.Provider registryAccess) {
+		if (!FeatureCfg.get().enableVillageStructures()) return;
+
+		ParagliderMod.LOGGER.debug("Start adding village structures");
+		appendPool(registryAccess, Identifier.withDefaultNamespace("village/desert/houses"),
+				Pair.of(StructurePoolElement.legacy(MODID + ":gerudo_village_goddess_statue"), 1),
+				Pair.of(StructurePoolElement.legacy(MODID + ":desert_village_horned_statue"), 1)
+		);
+		appendPool(registryAccess, Identifier.withDefaultNamespace("village/plains/houses"),
+				Pair.of(StructurePoolElement.legacy(MODID + ":hateno_village_goddess_statue"), 1),
+				Pair.of(StructurePoolElement.legacy(MODID + ":plains_village_horned_statue"), 1)
+		);
+		appendPool(registryAccess, Identifier.withDefaultNamespace("village/savanna/houses"),
+				Pair.of(StructurePoolElement.legacy(MODID + ":rito_village_goddess_statue"), 3),
+				Pair.of(StructurePoolElement.legacy(MODID + ":savanna_village_horned_statue"), 1)
+		);
+		appendPool(registryAccess, Identifier.withDefaultNamespace("village/snowy/houses"),
+				Pair.of(StructurePoolElement.legacy(MODID + ":snowy_village_horned_statue"), 1)
+		);
+		appendPool(registryAccess, Identifier.withDefaultNamespace("village/taiga/houses"),
+				Pair.of(StructurePoolElement.legacy(MODID + ":kakariko_village_goddess_statue"), 3),
+				Pair.of(StructurePoolElement.legacy(MODID + ":taiga_village_horned_statue"), 1)
+		);
+
+		ParagliderMod.LOGGER.debug("Finished adding village structures");
+	}
+
+	@SafeVarargs
+	private static void appendPool(
+			HolderLookup.Provider registryAccess,
+			Identifier id,
+			Pair<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer>... elementToWeight
+	) {
+		var oPool = registryAccess.get(ResourceKey.create(Registries.TEMPLATE_POOL, id));
+		if (oPool.isEmpty()) {
+			ParagliderMod.LOGGER.warn("Template pool '{}' doesn't exist", id);
+			return;
+		}
+
+		StructureTemplatePool pool = oPool.get().value();
+
+		if (elementToWeight.length == 0) return;
+		if (!INJECTED.add(pool)) return;
+
+		List<Pair<StructurePoolElement, Integer>> newWeightedPool = new ArrayList<>(
+				pool.rawTemplates.size() + elementToWeight.length);
+		newWeightedPool.addAll(pool.rawTemplates);
+
+		for (var p : elementToWeight)
+			newWeightedPool.add(Pair.of(p.getFirst().apply(StructureTemplatePool.Projection.RIGID), p.getSecond()));
+
+		pool.rawTemplates = newWeightedPool;
+
+		pool.templates.clear();
+		for (Pair<StructurePoolElement, Integer> pair : pool.rawTemplates) {
+			StructurePoolElement structurepoolelement = pair.getFirst();
+
+			for (int i = 0; i < pair.getSecond(); ++i) {
+				pool.templates.add(structurepoolelement);
+			}
+		}
+
+		ParagliderMod.LOGGER.debug("Added {} elements to template pool '{}'", elementToWeight.length, id);
+	}
+
+	public static final class ReloadListener extends SimplePreparableReloadListener<Void> {
+		private final HolderLookup.Provider registryLookup;
+
+		public ReloadListener(HolderLookup.Provider registryLookup) {
+			this.registryLookup = registryLookup;
+		}
+
+		@Override protected Void prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+			return null;
+		}
+
+		@Override protected void apply(Void object, ResourceManager resourceManager, ProfilerFiller profiler) {
+			addVillageStructures(this.registryLookup);
+		}
+	}
+}

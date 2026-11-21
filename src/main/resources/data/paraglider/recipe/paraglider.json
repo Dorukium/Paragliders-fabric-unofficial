@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "1": "#c:rods/wooden",
+    "2": "#c:leathers"
+  },
+  "pattern": [
+    "121",
+    "212",
+    "1 1"
+  ],
+  "result": {
+    "id": "paraglider:paraglider"
+  }
+}

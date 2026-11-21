@@ -1,0 +1,51 @@
+package tictim.paraglider.contents;
+
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.DisplayContentsFactory;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import org.jspecify.annotations.NullMarked;
+import tictim.paraglider.api.ParagliderAPI;
+
+import java.util.Locale;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+@NullMarked
+public enum VesselSlotDisplay implements SlotDisplay {
+	HEART_CONTAINER(() -> Contents.get().heartContainer()),
+	STAMINA_VESSEL(() -> Contents.get().staminaVessel()),
+	ESSENCE(() -> Contents.get().essence());
+
+	public final Type<VesselSlotDisplay> type = new Type<>(
+			MapCodec.unit(this), StreamCodec.unit(this)
+	);
+	private final Supplier<Item> item;
+
+	VesselSlotDisplay(Supplier<Item> item) {
+		this.item = item;
+	}
+
+	@Override public <T> Stream<T> resolve(ContextMap context, DisplayContentsFactory<T> output) {
+		if (output instanceof DisplayContentsFactory.ForStacks<T> forStacks) {
+			return Stream.of(new ItemStack(this.item.get())).map(forStacks::forStack);
+		}
+		return Stream.empty();
+	}
+
+	@Override public Type<? extends SlotDisplay> type() {
+		return this.type;
+	}
+
+	public static void bootstrap() {
+		for (VesselSlotDisplay display : values()) {
+			Registry.register(BuiltInRegistries.SLOT_DISPLAY,
+					ParagliderAPI.id(display.name().toLowerCase(Locale.ROOT)), display.type);
+		}
+	}
+}
