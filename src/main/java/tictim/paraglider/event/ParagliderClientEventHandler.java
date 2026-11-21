@@ -31,8 +31,10 @@ public final class ParagliderClientEventHandler {
 			}
 		});
 
+		// Fabric: returning TRUE cancels vanilla attack + block breaking.
+		// Only intercept while paragliding (upstream RenderHandEvent/InteractionKeyMappingTriggered).
 		ClientPreAttackCallback.EVENT.register((minecraft, player, count) ->
-				!Movement.get(player).state().paragliding());
+				Movement.get(player).state().paragliding());
 
 		// Also cancel client-side right-clicks so the arm-swing animation does not play.
 		net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register((player, level, hand, hit) ->

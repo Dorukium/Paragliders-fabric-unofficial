@@ -135,6 +135,13 @@ sunucuda yapay `ServerPlayer` oluşturup `Movement.get(player)` çağrıldı:
 `ATTACH_TEST_OK=ServerPlayerMovement vessels=SimpleVesselContainer` ✅. Geçici test kodu
 kaldırıldı ve temiz JAR yeniden derlendi. Bu düzeltme olmadan hiçbir oyuncu dünyaya giremezdi.
 
+## Kritik sol-tık / kazı hatası düzeltmesi
+
+`ClientPreAttackCallback`Fabric'te **true dönüş vanilla saldırıyı ve blok kırmayı iptal eder**.
+Portta bu geri alınmış ve `!paragliding()` döndürülüyordu; yani oyuncu uçmuyorken
+her sol tık iptal ediliyordu (kazı yapılamıyordu). `paragliding()` döndürecek şekilde
+düzeltildi — artık sadece paraşürle uçarken etkileşim iptal ediliyor.
+
 ## Bilinen farklar / dikkat edilmesi gerekenler
 
 1. **Keybinding:** Ctrl+P davranışı korundu; Fabric `KeyMapping`'de modifier alanı olmadığı için
