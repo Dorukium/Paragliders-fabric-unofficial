@@ -15,6 +15,11 @@ Unofficial Fabric port of Tictim's [Paraglider](https://github.com/Tictim/Paragl
 This is an unofficial port and is not endorsed by the upstream author. Port-specific
 issues belong here, not in the upstream repository.
 
+## Download
+
+Ready-to-install JAR: [GitHub Releases](https://github.com/Dorukium/Paragliders-fabric-unofficial/releases/latest)
+(`Paraglider-fabric-26.2-26.2.1+fabric.jar`). Sources JAR is also attached there.
+
 ## Dependencies
 
 - [Fabric API](https://modrinth.com/mod/fabric-api) 0.161.0+26.2
